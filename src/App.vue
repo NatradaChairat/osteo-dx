@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar v-if="!isAuthPage" flat height="64" class="px-6 bg-white" elevation="3">
       <!-- Brand -->
-      <v-toolbar-title class="text-h6 font-weight-bold">
+      <v-toolbar-title class="text-h6 font-weight-bold" @click="goHome">
         <span class="text-primary">Osteo</span><span class="text-black">DX</span>
       </v-toolbar-title>
 
@@ -56,6 +56,10 @@ const isAuthPage = computed(() =>
 function logout() {
   logoutUser()
   router.push('/login')
+}
+
+function goHome() {
+  router.push('/')
 }
 </script>
 

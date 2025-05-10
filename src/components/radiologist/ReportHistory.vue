@@ -1,7 +1,7 @@
 <template>
   <v-card class="elevation-2 pa-4">
     <v-card-title class="text-primary font-weight-bold">
-      <v-row class="w-100" align="center" justify="space-between" no-gutters>
+      <v-row class="w-100" justify="space-between" no-gutters>
         <!-- Title -->
         <v-col cols="12" md="4">
           <div>Lab Report List</div>
@@ -88,6 +88,82 @@
 </template>
 
 <script>
+import { useLabReports } from '@/useLabReports'
+import { Patients } from '@/assets/PatientData.js'
+
+export default {
+  name: 'LabReportHistory',
+  data() {
+    return {
+      showFilter: false,
+      sortKey: 'Date',
+      filterPriority: 'All',
+      filterType: 'All',
+      search: '',
+      enrichedReports: []
+    }
+  },
+  created() {
+    const labReports = useLabReports()
+
+    // Get non-completed reports
+    const activeReports = labReports.reports.value.filter(r => r.order.status !== 'completed')
+
+    // Enrich with patient names
+    this.enrichedReports = activeReports.map(report => {
+      const match = Patients.find(p => p.id === report.patientId)
+      return {
+        ...report,
+        name: match?.name || 'Unknown'
+      }
+    })
+  },
+  computed: {
+    filteredReports() {
+      const q = this.search.toLowerCase()
+
+      let results = this.enrichedReports.filter(r =>
+        r.name.toLowerCase().includes(q) || r.patientId.toString().includes(q)
+      )
+
+      // 🔍 Filter by Priority
+      if (this.filterPriority !== 'All') {
+        results = results.filter(r => r.order.priority === this.filterPriority)
+      }
+
+      // 🔍 Filter by Order Type
+      if (this.filterType !== 'All') {
+        results = results.filter(r => r.order.type === this.filterType)
+      }
+
+      // 🔃 Sort
+      if (this.sortKey === 'Name') {
+        results.sort((a, b) => a.name.localeCompare(b.name))
+      } else if (this.sortKey === 'Date') {
+        results.sort((a, b) => {
+          const d1 = new Date(a.orderDate.split('/').reverse().join('-'))
+          const d2 = new Date(b.orderDate.split('/').reverse().join('-'))
+          return d2 - d1
+        })
+      }
+
+      return results
+    }
+  },
+  methods: {
+    resetFilters() {
+      this.sortKey = 'Date'
+      this.filterPriority = 'All'
+      this.filterType = 'All'
+    },
+    goToReport(report) {
+      this.$router.push({ name: 'LabReportDetail', params: { id: report.orderId } })
+    }
+  }
+}
+</script>
+
+<!-- <script>
 import { LabReports } from "@/assets/LabReport.js";
 import { Patients } from "@/assets/PatientData.js";
 
@@ -104,7 +180,7 @@ export default {
     };
   },
   created() {
-    this.enrichedReports = LabReports.map(report => {
+    this.enrichedReports = LabReports.filter(report => report.order.status !== 'completed').map(report => {
       const match = Patients.find(p => p.id === report.patientId);
       return {
         ...report,
@@ -156,7 +232,7 @@ export default {
     },
   }
 };
-</script>
+</script> -->
 
 <style scoped>
 .hover-row {

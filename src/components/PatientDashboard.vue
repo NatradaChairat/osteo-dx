@@ -119,9 +119,9 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div v-if="item.reportLink"
+                                            <div v-if="item.status === 'completed'"
                                                 class="text-caption font-weight-medium text-primary"
-                                                style="cursor: pointer;">
+                                                style="cursor: pointer;" @click="viewReport(item.orderId)">
                                                 View report
                                             </div>
                                         </div>
@@ -254,6 +254,9 @@
 import { Patients } from '@/assets/PatientData'
 import femaleAvatar from '@/assets/face_female.jpg'
 import maleAvatar from '@/assets/face_male.jpg'
+import { useLabReports } from '@/useLabReports'
+
+const labReports = useLabReports()
 
 export default {
     props: ['id'],
@@ -274,7 +277,7 @@ export default {
                     date: '15/12/2024',
                     name: 'Blood test',
                     status: 'completed',
-                    reportLink: true
+                    orderId: true
                 }
             ]
         }
@@ -282,6 +285,16 @@ export default {
     created() {
         this.patient = Patients.find(p => p.id.toString() === this.id)
         this.avatarSrc = this.patient.gender === 'Female' ? femaleAvatar : maleAvatar
+        const patientReports = labReports.reports.value.filter(
+            r => r.patientId === this.patient.id
+        )
+        const imagingInvestigations = patientReports.map(r => ({
+            date: r.orderDate,
+            name: `${r.order.bodyPart} ${r.order.type}`,
+            status: r.order.status,
+            orderId: r.orderId // used for "View report"
+        }))
+        this.investigations = [...imagingInvestigations, ...this.investigations]
     },
     methods: {
         sendImagingOrder() {
@@ -290,16 +303,32 @@ export default {
                 date: today,
                 name: `${this.order.bodyPart} ${this.order.type}`,
                 status: 'pending',
-                reportLink: false
             }
             this.investigations.unshift(newInvestigation)
+            const newReport = {
+                orderId: Date.now(),
+                patientId: this.patient.id,
+                orderDate: today,
+                order: {
+                    type: `${this.order.type}`,
+                    bodyPart: `${this.order.bodyPart}`,
+                    reason: `${this.order.reason}`,
+                    priority: `${this.order.priority}`,
+                    status: 'pending',
+                    diagnosis: null
+                }
+            }
+
+            labReports.addOrUpdateReport(newReport)
             this.showSuccessDialog = true
         },
         backToDashboard() {
             this.showSuccessDialog = false
             this.showImagingOrder = false
         },
-
+        viewReport(orderId) {
+            this.$router.push({ name: 'LabReportDetail', params: { id: orderId } })
+        }
     },
     computed: {
         groupedDiagnoses() {

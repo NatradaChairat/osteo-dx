@@ -1,7 +1,9 @@
 <template>
     <v-container>
-        <v-row class="justify-space-between align-center mb-6">
-            <h1 class="text-primary font-weight-bold" style="margin-top: 10px ;">X-ray Report</h1>
+        <v-row class="justify-center">
+            <v-col cols="12">
+                <h1 class="text-primary font-weight-bold text-center" style="margin-top: 10px ;">X-ray Report</h1>
+            </v-col>
         </v-row>
 
         <v-row>
@@ -64,20 +66,19 @@
                 <!-- AI Diagnosis -->
                 <v-card class="pa-4 mb-4">
                     <div class="text-subtitle-1 font-weight-medium mb-2">AI diagnosis</div>
-                    <ul class="text-body-2">
-                        <li>Joint space narrowing, particularly in the medial compartment</li>
-                        <li>Subchondral sclerosis</li>
-                        <li>Osteophyte formation along the femoral and tibial margins</li>
-                        <li>Mild patellofemoral joint degeneration</li>
-                    </ul>
-                    <p class="text-body-2 mt-2">
-                        These findings are consistent with early to moderate osteoarthritis of the right knee.
-                    </p>
-
+                    <div class="text-body-2" v-html="diagnosisText"></div>
                     <div class="d-flex justify-end mt-4">
-                        <v-btn color="primary" class="text-white mr-2" @click="acceptReport">Accept</v-btn>
-                        <v-btn variant="outlined" color="primary" class="mr-2" @click="modifyReport">Modify</v-btn>
-                        <v-btn variant="outlined" color="primary" @click="rejectReport">Reject</v-btn>
+                        <template v-if="orderSrc?.order?.status !== 'completed'">
+                            <v-btn color="primary" class="text-white mr-2" @click="acceptReport">Accept</v-btn>
+                            <v-btn variant="outlined" color="primary" class="mr-2" @click="modifyReport">Modify</v-btn>
+                            <v-btn variant="outlined" color="primary" @click="rejectReport">Reject</v-btn>
+                        </template>
+                        <template v-else>
+                            <v-btn color="primary" class="text-white mr-2" @click="exportPDF">View full radiology
+                                report</v-btn>
+                            <v-btn variant="outlined" color="primary" class="mr-2" @click="modifyReport">Modify</v-btn>
+                            <v-btn variant="outlined" color="primary" @click="rejectReport">Reject</v-btn>
+                        </template>
                     </div>
                 </v-card>
             </v-col>
@@ -89,28 +90,116 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Patients } from '@/assets/PatientData.js'
-import { LabReports } from "@/assets/LabReport.js";
+import { useLabReports } from '@/useLabReports'
 
 const route = useRoute()
 const router = useRouter()
 
+const { reports } = useLabReports()
 const orderSrc = ref(null)
 const patient = ref(null)
+const diagnosisText = ref('')
+const prediction = ref(null)
+
+const aiDiagnosisMap = {
+    Normal: [
+        "No abnormal findings detected in the joint space.",
+        "Joint alignment and spacing appear normal.",
+        "No signs of degeneration or bony changes."
+    ],
+    Doubtful: [
+        "Very subtle irregularities may be present in the joint surface.",
+        "Slight suspicion of early cartilage changes.",
+        "Findings are inconclusive; clinical correlation is advised."
+    ],
+    Mild: [
+        "Early joint space narrowing detected, primarily medially.",
+        "Small osteophyte formation may be present.",
+        "Mild subchondral sclerosis observed."
+    ],
+    Moderate: [
+        "Moderate joint space narrowing noted, especially in the weight-bearing regions.",
+        "Visible osteophytes at joint margins.",
+        "Subchondral sclerosis and bone remodeling observed."
+    ],
+    Severe: [
+        "Severe joint space narrowing and deformity detected.",
+        "Large osteophytes and advanced subchondral sclerosis present.",
+        "Possible bone-on-bone contact and joint misalignment."
+    ]
+}
+
+function getRandomPrediction() {
+    const classes = ['Normal', 'Doubtful', 'Mild', 'Moderate', 'Severe']
+    const randomClass = classes[Math.floor(Math.random() * classes.length)]
+    const randomConfidence = (Math.random() * 0.4 + 0.6).toFixed(3) // 0.6 to 1.0
+    return {
+        class: randomClass,
+        confidence: parseFloat(randomConfidence)
+    }
+}
+
+function generateDiagnosis(predictionObj) {
+    if (!predictionObj || !aiDiagnosisMap[predictionObj.class]) return
+
+    const confidenceStr = (predictionObj.confidence * 100).toFixed(1)
+    const lines = aiDiagnosisMap[predictionObj.class]
+
+    diagnosisText.value =
+        `• AI model detected **${predictionObj.class} osteoarthritis** with ${confidenceStr}% confidence.<br>` +
+        lines.map(l => `• ${l}`).join('<br>')
+
+    console.log("Generated diagnosisText:", diagnosisText.value)
+}
 
 onMounted(() => {
     const id = parseInt(route.params.id)
-    orderSrc.value = LabReports.find(p => p.orderId === id)
-    patient.value = Patients.find(p => p.id === orderSrc.value.patientId)
+    orderSrc.value = reports.value.find(p => p.orderId === id)
+
+    if (orderSrc.value) {
+        patient.value = Patients.find(p => p.id === orderSrc.value.patientId)
+        console.log("Loaded order:", orderSrc.value.order)
+
+        const diagnosisRaw = orderSrc.value.order?.diagnosis
+        console.log("diagnosisRaw:", diagnosisRaw)
+
+        if (typeof diagnosisRaw !== 'string' || diagnosisRaw.trim() === '') {
+            console.log("→ Generating new prediction")
+            prediction.value = getRandomPrediction()
+            generateDiagnosis(prediction.value)
+
+            // Persist diagnosis back to the order
+            orderSrc.value.order.diagnosis = diagnosisText.value
+            orderSrc.value.order.prediction = prediction.value // optional
+        } else {
+            console.log("→ Using existing diagnosis")
+            diagnosisText.value = diagnosisRaw
+        }
+    } else {
+        console.warn('Lab report not found for orderId:', id)
+    }
 })
 
-// Actions
 function acceptReport() {
-    router.push({ name: 'FinalReportPreview', params: { id: orderSrc.value.orderId } })
+    if (orderSrc.value) {
+        orderSrc.value.order.diagnosis = diagnosisText.value
+        router.push({ name: 'FinalReportPreview', params: { id: orderSrc.value.orderId } })
+    }
 }
+
 function modifyReport() {
-    console.log("Modify report requested.")
+    if (orderSrc.value) {
+        router.push({ name: 'EditDiagnosis', params: { id: orderSrc.value.orderId } })
+    }
 }
+
 function rejectReport() {
-    console.log("Report rejected.")
+    if (orderSrc.value) {
+        router.push({ name: 'DiagnosisOverride', params: { id: orderSrc.value.orderId } })
+    }
+}
+
+function exportPDF() {
+    router.push('/')
 }
 </script>

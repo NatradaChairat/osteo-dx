@@ -44,6 +44,19 @@ const routes = [
     component: () => import("@/components/radiologist/FinalReportPreview.vue"),
     props: true,
   },
+  {
+    path: "/editDisgnosis/:id",
+    name: "EditDiagnosis",
+    component: () => import("@/components/radiologist/EditDiagnosis.vue"),
+    props: true,
+  },
+  {
+    path: "/diagnosisOverride/:id",
+    name: "DiagnosisOverride",
+    component: () =>
+      import("@/components/radiologist/DiagnosisOverrideView.vue"),
+    props: true,
+  },
 ];
 
 const router = createRouter({

@@ -24,13 +24,10 @@
             <div class="text-body-2">{{ clinicalHistory }}</div>
         </v-card>
 
-        <!-- Diagnosis -->
-        <v-card class="pa-4 mb-6 rounded-lg">
-            <div class="text-subtitle-1 font-weight-bold mb-2">Diagnosis</div>
-            <ul class="text-body-2">
-                <li v-for="(dx, i) in diagnosisList" :key="i">{{ dx }}</li>
-            </ul>
-            <div class="text-body-2 mt-2">{{ diagnosisSummary }}</div>
+        <!-- AI Diagnosis -->
+        <v-card class="pa-4 mb-6 rounded-lg" v-if="orderSrc?.order?.diagnosis">
+            <div class="text-subtitle-1 font-weight-bold mb-2">AI Diagnosis</div>
+            <div class="text-body-2" v-html="formattedDiagnosis" />
         </v-card>
 
         <!-- Action Buttons -->
@@ -45,46 +42,53 @@
     </v-container>
 </template>
 
+
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Patients } from '@/assets/PatientData.js'
-import { LabReports } from "@/assets/LabReport.js";
+import { useLabReports } from '@/useLabReports'
+import { useAuth } from '@/auth'
+const { user } = useAuth()
 
 const route = useRoute()
 const router = useRouter()
+const { reports, updateStatus } = useLabReports()
 
 const orderSrc = ref(null)
 const patient = ref(null)
 
 onMounted(() => {
     const id = parseInt(route.params.id)
-    orderSrc.value = LabReports.find(p => p.orderId === id)
-    patient.value = Patients.find(p => p.id === orderSrc.value.patientId)
+    orderSrc.value = reports.value.find(p => p.orderId === id)
+
+    if (orderSrc.value) {
+        patient.value = Patients.find(p => p.id === orderSrc.value.patientId)
+    } else {
+        console.warn('⚠️ Report not found for orderId:', id)
+    }
 })
 
-
+// Clinical history (can remain static or be loaded from report if dynamic)
 const clinicalHistory = ref(
     'Patient reports 3 months of progressive right knee pain without trauma. ' +
     'Symptoms include activity-related discomfort, occasional morning stiffness, and mild swelling. ' +
     'History of osteoarthritis in the opposite knee.'
 )
 
-const diagnosisList = ref([
-    'Joint space narrowing, particularly in the medial compartment',
-    'Subchondral sclerosis',
-    'Osteophyte formation along the femoral and tibial margins',
-    'Mild patellofemoral joint degeneration'
-])
+// Render formatted diagnosis from saved data
+const formattedDiagnosis = computed(() => {
+    const raw = orderSrc.value?.order?.diagnosis
+    return raw ? raw.replace(/\n/g, '<br>') : ''
+})
 
-const diagnosisSummary = ref(
-    'These findings are consistent with early to moderate osteoarthritis of the right knee.'
-)
-
+// Save status and route
 function submitToEHR() {
-    console.log('Report submitted to EHR')
-    // Your EHR submission logic here
-    router.push('/labReports')
+    if (orderSrc.value) {
+        const today = new Date().toLocaleDateString('en-GB')
+        updateStatus(orderSrc.value.orderId, 'completed', user.value.username, today)
+        router.push('/labReports')
+    }
 }
 
 function cancel() {
