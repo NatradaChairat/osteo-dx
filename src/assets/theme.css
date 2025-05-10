@@ -1,0 +1,82 @@
+/* Text color utilities */
+.text-primary {
+    color: #E0006D;
+  }
+  
+  .text-secondary {
+    color: #C80061;
+  }
+  
+  .text-black {
+    color: #000000;
+  }
+  
+  .text-white {
+    color: #FFFFFF;
+  }
+  
+  .text-gray-light {
+    color: #F2EEEE;
+  }
+  
+  .text-gray-dark {
+    color: #837D7D;
+  }
+  
+  .text-blue {
+    color: #00BFFF;
+  }
+  
+  .text-amber {
+    color: #FFC107;
+  }
+  
+  .text-purple {
+    color: #6A0DAD;
+  }
+  
+  .text-green {
+    color: #00C853;
+  }
+  
+  /* Background color utilities */
+  .bg-primary {
+    background-color: #E0006D;
+  }
+  
+  .bg-secondary {
+    background-color: #C80061;
+  }
+  
+  .bg-black {
+    background-color: #000000;
+  }
+  
+  .bg-white {
+    background-color: #FFFFFF;
+  }
+  
+  .bg-gray-light {
+    background-color: #F2EEEE;
+  }
+  
+  .bg-gray-dark {
+    background-color: #837D7D;
+  }
+  
+  .bg-blue {
+    background-color: #00BFFF;
+  }
+  
+  .bg-amber {
+    background-color: #FFC107;
+  }
+  
+  .bg-purple {
+    background-color: #6A0DAD;
+  }
+  
+  .bg-green {
+    background-color: #00C853;
+  }
+  
