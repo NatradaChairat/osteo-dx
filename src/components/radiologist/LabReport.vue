@@ -147,8 +147,8 @@ function generateDiagnosis(predictionObj) {
     const lines = aiDiagnosisMap[predictionObj.class]
 
     diagnosisText.value =
-        `• AI model detected **${predictionObj.class} osteoarthritis** with ${confidenceStr}% confidence.<br>` +
-        lines.map(l => `• ${l}`).join('<br>')
+        `• AI model detected ${predictionObj.class} osteoarthritis with ${confidenceStr}% confidence.` +
+        lines.map(l => `• ${l}`)
 
     console.log("Generated diagnosisText:", diagnosisText.value)
 }

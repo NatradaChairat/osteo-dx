@@ -104,7 +104,7 @@
                             <div v-for="(item, i) in investigations" :key="i" class="mb-2">
                                 <div class="d-flex justify-space-between align-start">
                                     <span class="text-body-2 text-gray-dark" style="margin-top: 2px;">{{ item.date
-                                    }}</span>
+                                        }}</span>
                                     <div class="ml-2" style="width: 100%;">
                                         <div class="d-flex justify-space-between">
                                             <div>
@@ -195,7 +195,7 @@
                             <v-col cols="12" md="4">
                                 <v-card class="pa-4">
                                     <div class="text-body-2 text-gray-dark">Latest encounter</div>
-                                    <div class="text-body-1 mb-3">15/09/2025<br>Annual rev</div>
+                                    <div class="text-body-1 mb-3">15/09/2025 Annual rev</div>
 
                                     <div class="text-body-2 text-gray-dark">Co-morbidities</div>
                                     <div class="text-body-1">Osteoarthritis</div>

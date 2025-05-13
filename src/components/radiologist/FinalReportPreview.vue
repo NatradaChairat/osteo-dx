@@ -79,7 +79,7 @@ const clinicalHistory = ref(
 // Render formatted diagnosis from saved data
 const formattedDiagnosis = computed(() => {
     const raw = orderSrc.value?.order?.diagnosis
-    return raw ? raw.replace(/\n/g, '<br>') : ''
+    return raw ? raw : ''
 })
 
 // Save status and route

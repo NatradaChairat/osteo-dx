@@ -38,7 +38,9 @@
         <!-- ✅ Feedback Dialog -->
         <v-dialog v-model="dialog" width="400" persistent>
             <v-card class="pa-6 text-center">
-                <v-icon size="64" color="warning" class="mb-4">mdi-check-circle</v-icon>
+                <div class="d-flex justify-center mb-4">
+                    <v-icon size="64" color="warning">mdi-check-circle</v-icon>
+                </div>
                 <h2 class="text-h6 font-weight-bold mb-2">Successful feedback submission</h2>
                 <v-btn color="warning" class="mt-4 px-6" @click="closeDialog">Close</v-btn>
             </v-card>

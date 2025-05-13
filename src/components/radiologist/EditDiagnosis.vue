@@ -96,7 +96,7 @@ onMounted(() => {
 
     if (orderSrc.value) {
         patient.value = Patients.find(p => p.id === orderSrc.value.patientId)
-        diagnosisText.value = orderSrc.value.order.diagnosis || ''
+        diagnosisText.value = orderSrc.value.order.diagnosis?.replace(/<br>|\\n|\/n|\*\*/g, '') || ''
     } else {
         console.warn('⚠️ Order not found for ID:', orderId)
     }
