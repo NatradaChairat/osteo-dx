@@ -4,7 +4,7 @@
       <v-row class="w-100" justify="space-between" no-gutters>
         <!-- Title -->
         <v-col cols="12" md="4">
-          <div>Lab Report List</div>
+          <div>Lab Report Dashboard</div>
         </v-col>
 
         <!-- Search + Filter Button Side-by-Side -->
@@ -32,7 +32,7 @@
           <th class="text-primary font-weight-bold">Order Type</th>
           <th class="text-primary font-weight-bold">Body Part</th>
           <th class="text-primary font-weight-bold">Priority</th>
-          <th class="text-primary font-weight-bold">Date Ordered</th>
+          <th class="text-primary font-weight-bold">Status</th>
         </tr>
       </template>
 
@@ -44,7 +44,9 @@
           <td>{{ item.order.type }}</td>
           <td>{{ item.order.bodyPart }}</td>
           <td>{{ item.order.priority }}</td>
-          <td>{{ item.orderDate }}</td>
+          <td><v-chip class="ma-1" :color="getStatusColor(item.order.status)" text-color="white" variant="elevated">
+              {{ item.order.status.toUpperCase() }}
+            </v-chip></td>
         </tr>
       </template>
     </v-data-table>
@@ -78,6 +80,18 @@
         </v-btn-toggle>
       </div>
 
+      <!-- Order Status -->
+      <div class="mb-4">
+        <div class="text-subtitle-2 mb-2">Order Status</div>
+        <v-btn-toggle v-model="filterStatus" mandatory>
+          <v-btn value="All">All</v-btn>
+          <v-btn value="Pending">Pending</v-btn>
+          <v-btn value="Completed">Completed</v-btn>
+          <v-btn value="Rejected">Rejected</v-btn>
+        </v-btn-toggle>
+
+      </div>
+
       <!-- Actions -->
       <v-card-actions class="justify-end">
         <v-btn variant="text" @click="resetFilters">Reset</v-btn>
@@ -99,6 +113,7 @@ export default {
       sortKey: 'Date',
       filterPriority: 'All',
       filterType: 'All',
+      filterStatus: 'All',
       search: '',
       enrichedReports: []
     }
@@ -107,7 +122,7 @@ export default {
     const labReports = useLabReports()
 
     // Get non-completed reports
-    const activeReports = labReports.reports.value.filter(r => r.order.status !== 'completed')
+    const activeReports = labReports.reports.value
 
     // Enrich with patient names
     this.enrichedReports = activeReports.map(report => {
@@ -136,6 +151,11 @@ export default {
         results = results.filter(r => r.order.type === this.filterType)
       }
 
+      // 🔍 Filter by Status
+      if (this.filterStatus !== 'All') {
+        results = results.filter(r => r.order.status === this.filterStatus)
+      }
+
       // 🔃 Sort
       if (this.sortKey === 'Name') {
         results.sort((a, b) => a.name.localeCompare(b.name))
@@ -155,84 +175,26 @@ export default {
       this.sortKey = 'Date'
       this.filterPriority = 'All'
       this.filterType = 'All'
+      this.filterStatus = 'All'
     },
     goToReport(report) {
       this.$router.push({ name: 'LabReportDetail', params: { id: report.orderId } })
+    },
+    getStatusColor(status) {
+      switch (status.toLowerCase()) {
+        case 'pending':
+          return '#FFC107'
+        case 'completed':
+          return '#00C853'
+        case 'rejected':
+          return '#FA3E05'
+        default:
+          return 'grey lighten-2'
+      }
     }
   }
 }
 </script>
-
-<!-- <script>
-import { LabReports } from "@/assets/LabReport.js";
-import { Patients } from "@/assets/PatientData.js";
-
-export default {
-  name: 'LabReportHistory',
-  data() {
-    return {
-      showFilter: false,
-      sortKey: 'Date',
-      filterPriority: 'All',
-      filterType: 'All',
-      search: '',
-      enrichedReports: []
-    };
-  },
-  created() {
-    this.enrichedReports = LabReports.filter(report => report.order.status !== 'completed').map(report => {
-      const match = Patients.find(p => p.id === report.patientId);
-      return {
-        ...report,
-        name: match?.name || 'Unknown',
-      };
-    });
-  },
-  computed: {
-    filteredReports() {
-      const q = this.search.toLowerCase();
-
-      let results = this.enrichedReports.filter(r =>
-        r.name.toLowerCase().includes(q) || r.patientId.toString().includes(q)
-      );
-
-      // 🔍 Filter by Priority
-      if (this.filterPriority !== 'All') {
-        results = results.filter(r => r.order.priority === this.filterPriority);
-      }
-
-      // 🔍 Filter by Order Type
-      if (this.filterType !== 'All') {
-        results = results.filter(r => r.order.type === this.filterType);
-      }
-
-      // 🔃 Sort
-      if (this.sortKey === 'Name') {
-        results.sort((a, b) => a.name.localeCompare(b.name));
-      } else if (this.sortKey === 'Date') {
-        results.sort((a, b) => {
-          const d1 = new Date(a.orderDate.split('/').reverse().join('-'));
-          const d2 = new Date(b.orderDate.split('/').reverse().join('-'));
-          return d2 - d1;
-        });
-      }
-
-      return results;
-    }
-
-  },
-  methods: {
-    resetFilters() {
-      this.sortKey = 'Date'
-      this.filterPriority = 'All'
-      this.filterType = 'All'
-    },
-    goToReport(report) {
-      this.$router.push({ name: 'LabReportDetail', params: { id: report.orderId } });
-    },
-  }
-};
-</script> -->
 
 <style scoped>
 .hover-row {

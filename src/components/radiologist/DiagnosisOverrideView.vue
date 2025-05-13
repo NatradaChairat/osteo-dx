@@ -85,7 +85,7 @@ function submitOverride() {
 
 function closeDialog() {
     dialog.value = false
-    router.push({ name: 'DiagnosisHistories' })
+    router.push({ name: 'LabReportHistory' })
 }
 
 function cancel() {

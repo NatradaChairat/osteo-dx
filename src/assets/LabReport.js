@@ -8,7 +8,7 @@ export const LabReports = [
       bodyPart: "Right knee",
       reason: "Chronic right knee pain, suspected degenerative changes",
       priority: "Routine",
-      status: "pending", // pending, completed
+      status: "pending", // pending, completed, rejected
     },
   },
   {

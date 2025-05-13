@@ -12,7 +12,7 @@
       <v-btn variant="text" to="/patients" class="text-button" color="black" v-if="user.role == 'doctor'">Patient
         Lists</v-btn>
       <v-btn variant="text" to="/labReports" class="text-button" color="black" v-if="user.role !== 'doctor'">Lab
-        Reports</v-btn>
+        Dashboard</v-btn>
       <v-btn variant="text" to="/settings" class="text-button" color="black" :disabled="true">Settings</v-btn>
       <v-btn variant="text" to="/help" class="text-button" color="black" :disabled="true">Help</v-btn>
       <v-btn variant="text" @click="logout" class="text-button" color="black">Log-out</v-btn>
