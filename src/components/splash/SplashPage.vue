@@ -24,9 +24,9 @@ const { user } = useAuth()
 onMounted(() => {
   setTimeout(() => {
     if (user.value.role === 'doctor') {
-      router.push('/doctor')
+      router.push('/patients')
     } else if (user.value.role === 'radiologist') {
-      router.push('/radiologist')
+      router.push('/labReports')
     } else {
       router.push('/login')
     }

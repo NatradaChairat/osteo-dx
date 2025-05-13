@@ -104,7 +104,7 @@
                             <div v-for="(item, i) in investigations" :key="i" class="mb-2">
                                 <div class="d-flex justify-space-between align-start">
                                     <span class="text-body-2 text-gray-dark" style="margin-top: 2px;">{{ item.date
-                                        }}</span>
+                                    }}</span>
                                     <div class="ml-2" style="width: 100%;">
                                         <div class="d-flex justify-space-between">
                                             <div>

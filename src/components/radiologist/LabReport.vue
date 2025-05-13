@@ -76,8 +76,9 @@
                         <template v-else>
                             <v-btn color="primary" class="text-white mr-2" @click="exportPDF">View full radiology
                                 report</v-btn>
-                            <v-btn variant="outlined" color="primary" class="mr-2" @click="modifyReport">Modify</v-btn>
-                            <v-btn variant="outlined" color="primary" @click="rejectReport">Reject</v-btn>
+                            <v-btn variant="outlined" color="primary" class="mr-2" :disabled="true">Notify
+                                Patient</v-btn>
+                            <v-btn variant="outlined" color="primary" @click="goBack">Back</v-btn>
                         </template>
                     </div>
                 </v-card>
@@ -200,6 +201,11 @@ function rejectReport() {
 }
 
 function exportPDF() {
-    router.push('/')
+    window.open('/Radiology_Report.pdf', '_blank');
+
+}
+
+function goBack() {
+    router.back()
 }
 </script>

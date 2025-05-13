@@ -51,7 +51,7 @@ function handleLog() {
     username: username.value,
     role: role.value
   })
-  router.push(role.value === 'doctor' ? '/doctor' : '/radiologist')
+  router.push(role.value === 'doctor' ? '/patients' : '/labReports')
 }
 </script>
 
