@@ -52,7 +52,7 @@
     </v-data-table>
   </v-card>
 
-  <v-dialog v-model="showFilter" max-width="400">
+  <v-dialog v-model="showFilter" max-width="460">
     <v-card class="pa-4">
       <div class="text-h6 text-primary mb-4">Filter & Sort</div>
 
@@ -153,7 +153,7 @@ export default {
 
       // 🔍 Filter by Status
       if (this.filterStatus !== 'All') {
-        results = results.filter(r => r.order.status === this.filterStatus)
+        results = results.filter(r => r.order.status === this.filterStatus.toLocaleLowerCase())
       }
 
       // 🔃 Sort
